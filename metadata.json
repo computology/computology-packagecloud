@@ -1,0 +1,20 @@
+{
+  "name": "computology-packagecloud",
+  "version": "0.1.0",
+  "author": "Computology, LLC",
+  "summary": "packagecloud.io puppet integration",
+  "license": "Apache 2.0",
+  "source": "https://github.com/computology/computology-packagecloud",
+  "project_page": "https://github.com/computology/computology-packagecloud",
+  "issues_url": "https://github.com/computology/computology-packagecloud/issues",
+  "dependencies": [
+    {
+      "version_range": ">= 1.0.0",
+      "name": "puppetlabs-stdlib"
+    },
+    {
+      "version_range": ">= 1.4.2",
+      "name": "puppetlabs-apt"
+    }
+  ]
+}
