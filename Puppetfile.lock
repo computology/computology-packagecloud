@@ -1,0 +1,17 @@
+FORGE
+  remote: https://forgeapi.puppetlabs.com
+  specs:
+    puppetlabs/apt (1.5.1)
+      puppetlabs/stdlib (>= 2.2.1)
+    puppetlabs/stdlib (4.2.2)
+
+PATH
+  remote: ./module
+  specs:
+    computology/packagecloud (0.0.1)
+
+DEPENDENCIES
+  computology/packagecloud (>= 0)
+  puppetlabs/apt (>= 1.4.2)
+  puppetlabs/stdlib (>= 1.0.0)
+

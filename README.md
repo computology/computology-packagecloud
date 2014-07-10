@@ -46,6 +46,30 @@ packagecloud::repo { "username/privaterepo":
 }
 ```
 
+If you need to install more than one type of package from the same repository
+(for example, gem and deb files from username/publicrepo) you can use the
+`fq_name` parameter:
+
+```
+packagecloud::repo { "deb repository for blah":
+  fq_name => "username/blah",
+  type => 'rpm',
+}
+
+packagecloud::repo { "gem repository for blah":
+  fq_name => "username/blah",
+  type => 'gem',
+}
+```
+
+In order to properly use Gem repos, be sure to set your Exec path to include the directory where your `gem` binary is located. For example, in your site.pp:
+
+```
+Exec {
+  path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ]
+}
+```
+
 ## Usage
 
 As in the examples show in the above section, you should specify at least `type` (which can be either deb, rpm, or gem) and optionally `master_token`
@@ -53,9 +77,10 @@ if the repository is private.
 
 ## Limitations
 
-Currently supports:
+Currently supports the following operating systems:
   * Redhat Enterprise Linux 5 and 6
   * CentOS 5 and 6
+  * Scientific Linux 5 and 6
   * Fedora 14 - 20
   * AWS Linux
   * Ubuntu 4.10 - 14.04

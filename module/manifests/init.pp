@@ -17,18 +17,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#
-#  goal is something like:
-#
-#  packagecloud { "joe/mystuff":
-#     ensure       => present,
-#     type         => 'deb',
-#     master_token => 'asdsd',
-#  }
-#
 
-class packagecloud()
-{
+class packagecloud(
+  $gpgurl = "https://packagecloud.io/gpg.key",
+  $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud",
+) {
     case $::operatingsystem {
       'debian', 'ubuntu': {
         package { 'apt-transport-https':
