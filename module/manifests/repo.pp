@@ -76,6 +76,13 @@ define packagecloud::repo(
     case $::operatingsystem {
       'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
 
+        if !$::pygpgme_installed {
+          warning("The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/stahnma/puppet-module-epel")
+          $repo_gpgcheck = 0
+        } else {
+          $repo_gpgcheck = 1
+        }
+
         yumrepo { "${normalized_name}":
           ensure => present,
           descr   => "${base_url}/${repo_name}",
@@ -89,7 +96,7 @@ define packagecloud::repo(
           gpgkey        => $gpg_url,
           sslverify     => 1,
           sslcacert     => '/etc/pki/tls/certs/ca-bundle.crt',
-          repo_gpgcheck => 1,
+          repo_gpgcheck => $repo_gpgcheck,
         }
 
         exec { "yum_make_cache_${repo_name}":
