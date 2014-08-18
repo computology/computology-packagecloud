@@ -83,12 +83,25 @@ define packagecloud::repo(
           $repo_gpgcheck = 1
         }
 
+        if $read_token and $::operatingsystemmajrelease == '5' {
+          case $::operatingsystem {
+            'RedHat', 'CentOS', 'Scientific':  {
+              $yum_repo_url = "https://packagecloud.io/priv/${read_token}/${repo_name}/el/5/$::architecture/"
+            }
+            default: {
+              fail("Sorry, $::operatingsystem version $::operatingsystemmajrelease isn't supported. Email support@packagecloud.io")
+            }
+          }
+        } else {
+          $yum_repo_url = "${base_url}/${repo_name}/el/$::operatingsystemmajrelease/$::architecture/"
+        }
+
         yumrepo { "${normalized_name}":
           ensure => present,
-          descr   => "${base_url}/${repo_name}",
+          descr   => "${normalized_name}",
           enabled => 1,
           baseurl => $::operatingsystem ? {
-            /(RedHat|redhat|CentOS|centos)/ => "${base_url}/${repo_name}/el/$::operatingsystemmajrelease/$::architecture/",
+            /(RedHat|redhat|CentOS|centos|Scientific)/ => $yum_repo_url,
             'Fedora' => "${base_url}/${repo_name}/fedora/$::operatingsystemmajrelease/$::architecture/",
             'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
           },
