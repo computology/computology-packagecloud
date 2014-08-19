@@ -1,6 +1,6 @@
 {
   "name": "computology-packagecloud",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "Computology, LLC",
   "summary": "packagecloud.io puppet integration",
   "license": "Apache 2.0",
