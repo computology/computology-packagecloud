@@ -5,7 +5,7 @@ forge "https://forgeapi.puppetlabs.com"
 
 mod 'puppetlabs/stdlib', ">= 1.0.0"
 mod 'puppetlabs/apt', ">= 1.4.2"
-mod 'computology/packagecloud', :path => './module'
+mod 'computology/packagecloud', :path => '../'
 
 # A module from git
 # mod 'puppetlabs/ntp',

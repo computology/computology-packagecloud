@@ -1,0 +1,3 @@
+--- 
+  LIBRARIAN_PUPPET_DESTRUCTIVE: "false"
+  LIBRARIAN_PUPPET_PATH: /var/folders/w7/pky26x5n4rj3jlb5cq3s38lh0000gn/T/default-centos-65-sandbox-20141013-75665-1k1s3fm/modules

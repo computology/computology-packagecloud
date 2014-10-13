@@ -6,7 +6,7 @@ FORGE
     puppetlabs/stdlib (4.2.2)
 
 PATH
-  remote: ./module
+  remote: ../
   specs:
     computology/packagecloud (0.0.1)
 
