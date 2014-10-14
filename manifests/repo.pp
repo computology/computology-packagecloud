@@ -22,7 +22,7 @@ define packagecloud::repo(
   $type = undef,
   $fq_name = undef,
   $master_token = undef,
-  $gpg_url = "https://packagecloud.io/gpg.key",
+  $priority = undef,
 ) {
   validate_string($type)
   validate_string($master_token)
@@ -57,14 +57,25 @@ define packagecloud::repo(
     case $osname {
       'debian', 'ubuntu': {
 
-        include apt
+        $component = 'main'
+        $repo_url = "${base_url}/${repo_name}/${osname}"
+        $distribution =  $::lsbdistcodename
 
-        apt::source { "${normalized_name}":
-          location         => "${base_url}/${repo_name}/$osname",
-          repos            => 'main',
-          key              => 'D59097AB',
-          key_server       => 'pgp.mit.edu',
-          include_src      => true,
+        file { "${normalized_name}":
+          path    => "/etc/apt/sources.list.d/${normalized_name}.list",
+          ensure  => file,
+          mode    => 0644,
+          content => template('packagecloud/apt.erb'),
+        }
+
+        exec { "apt_key_add_${normalized_name}":
+          command => "wget -qO - https://packagecloud.io/gpg.key | apt-key add -",
+          require => File["${normalized_name}"],
+        }
+
+        exec { "apt_get_update_${normalized_name}":
+          command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
+          require => Exec["apt_key_add_${normalized_name}"],
         }
       }
 
@@ -95,26 +106,34 @@ define packagecloud::repo(
           }
         }
 
-        yumrepo { "${normalized_name}":
-          ensure => present,
-          descr   => "${normalized_name}",
-          enabled => 1,
-          baseurl => $::operatingsystem ? {
-            /(RedHat|redhat|CentOS|centos|Scientific)/ => $yum_repo_url,
-            'Fedora' => "${base_url}/${repo_name}/fedora/$::operatingsystemmajrelease/$::architecture/",
-            'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
-          },
-          gpgcheck      => 0,
-          gpgkey        => $gpg_url,
-          sslverify     => 1,
-          sslcacert     => '/etc/pki/tls/certs/ca-bundle.crt',
-          repo_gpgcheck => $repo_gpgcheck,
+        $description = $normalized_name
+        $repo_url = $::operatingsystem ? {
+          /(RedHat|redhat|CentOS|centos|Scientific)/ => $yum_repo_url,
+          'Fedora' => "${base_url}/${repo_name}/fedora/$::operatingsystemmajrelease/$::architecture/",
+          'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
+        }
+
+        $gpg_url = "https://packagecloud.io/gpg.key"
+        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud"
+
+        exec { "import_gpg_${normalized_name}":
+          command => "wget -qO ${gpg_file_path} ${gpg_url}",
+          path => "/usr/bin",
+          creates => $gpg_file_path,
+        }
+
+        file { "${normalized_name}":
+          path    => "/etc/yum.repos.d/${normalized_name}.repo",
+          ensure  => file,
+          mode    => 0644,
+          content => template('packagecloud/yum.erb'),
+          require => Exec["import_gpg_${normalized_name}"],
         }
 
         exec { "yum_make_cache_${repo_name}":
           command => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
           path => "/usr/bin",
-          require => Yumrepo["${normalized_name}"],
+          require => File["${normalized_name}"],
         }
       }
 

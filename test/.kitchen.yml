@@ -9,18 +9,46 @@ provisioner:
   hiera_data_path: test/hieradata
 
 platforms:
+  - name: nocm_ubuntu-10.04
+    driver_plugin: vagrant
+    driver_config:
+      box: nocm_ubuntu-10.04
+      box_url: http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-10044-x64-vbox4210-nocm.box
+
   - name: nocm_ubuntu-12.04
     driver_plugin: vagrant
     driver_config:
       box: nocm_ubuntu-12.04
       box_url: http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210-nocm.box
+
+  - name: ubuntu-14.04
+    driver_plugin: vagrant
+    driver_config:
+      box: opscode-ubuntu-14.04
+      box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-14.04_provisionerless.box
+
+  - name: centos-5.10
+    provisioner:
+      puppet_yum_repo: http://yum.puppetlabs.com/puppetlabs-release-el-5.noarch.rpm
+    driver_plugin: vagrant
+    driver_config:
+      box: nocm_centos-5.10
+      box_url: http://puppet-vagrant-boxes.puppetlabs.com/centos-510-x64-virtualbox-nocm.box
+
   - name: centos-6.5
     driver_plugin: vagrant
     driver_config:
       box: nocm_centos-6.5
       box_url: http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-nocm.box
 
+  - name: centos-7.0
+    provisioner:
+      puppet_yum_repo: https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+    driver_plugin: vagrant
+    driver_config:
+      box: opscode-centos-7.0
+      box_url: http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-7.0_chef-provisionerless.box
+
 suites:
   - name: default
     manifest: site.pp
-    suite_path: integration

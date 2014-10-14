@@ -1,14 +1,23 @@
 Exec {
-  path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ]
-}
-
-package { 'rubygems':
-    name => 'rubygems',
-    ensure => present,
+  path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/", "/usr/local/bin" ]
 }
 
 case $operatingsystem {
   'RedHat', 'CentOS': { 
+    package { 'rubygems':
+        name => 'rubygems',
+        ensure => present,
+    }
+
+    case $::operatingsystemrelease {
+      /^5.*/: {
+        package { 'epel5':
+          source => 'http://mirror.vcu.edu/pub/gnu_linux/epel/5/i386/epel-release-5-4.noarch.rpm',
+          ensure => present,
+        }
+      }
+    }
+
     packagecloud::repo { "computology/packagecloud-cookbook-test-public":
       fq_name => "computology/packagecloud-cookbook-test-public",
       type => 'rpm',
@@ -25,6 +34,28 @@ case $operatingsystem {
     }
   }
   /^(Debian|Ubuntu)$/:{ 
+    case $lsbdistcodename {
+      'trusty': {
+        package { 'dpkg-dev':
+          name => 'dpkg-dev',
+          ensure => present,
+        }
+        package { 'rubygems':
+          name => 'rubygems-integration',
+          ensure => present,
+        }
+      }
+      default: {
+        package { 'rubygems':
+          name => 'rubygems',
+          ensure => present,
+        }
+        package { 'libgemplugin-ruby':
+          ensure => present,
+        }
+      }
+    }
+
     packagecloud::repo { "computology/packagecloud-cookbook-test-public":
       fq_name => "computology/packagecloud-cookbook-test-public",
       type => 'deb',
@@ -45,10 +76,6 @@ case $operatingsystem {
       cwd => '/home/vagrant',
       require => Packagecloud::Repo["computology/packagecloud-cookbook-test-public"],
     }
-
-    package { 'libgemplugin-ruby':
-      ensure => present,
-    }
   }
 }
 
@@ -64,8 +91,9 @@ packagecloud::repo { "gem repository for blah":
 }
 
 package { 'jake gem':
-    name     => 'jakedotrb',
-    ensure   => 'installed',
-    provider => 'gem',
-    require  => Package['rubygems'],
+    name            => 'jakedotrb',
+    ensure          => 'installed',
+    provider        => 'gem',
+    install_options => ['--bindir', '/usr/local/bin'],
+    require         => Package['rubygems'],
 }

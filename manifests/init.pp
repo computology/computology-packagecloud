@@ -18,10 +18,7 @@
 # limitations under the License.
 #
 
-class packagecloud(
-  $gpgurl = "https://packagecloud.io/gpg.key",
-  $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud",
-) {
+class packagecloud() {
     case $::operatingsystem {
       'debian', 'ubuntu': {
         package { 'apt-transport-https':
