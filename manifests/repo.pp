@@ -87,6 +87,7 @@ define packagecloud::repo(
     case $::operatingsystem {
       'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
 
+        $majrel = $::osreleasemaj
         if $::pygpgme_installed == 'false' {
           warning("The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/stahnma/puppet-module-epel")
           $repo_gpgcheck = 0
@@ -96,20 +97,20 @@ define packagecloud::repo(
 
         if $::operatingsystem =~ /(RedHat|redhat|CentOS|centos|Scientific)/ {
           if $read_token {
-            if $::operatingsystemmajrelease == '5' {
+            if $majrel == '5' {
               $yum_repo_url = "https://packagecloud.io/priv/${read_token}/${repo_name}/el/5/$::architecture/"
             } else {
-              $yum_repo_url = "${base_url}/${repo_name}/el/$::operatingsystemmajrelease/$::architecture/"
+              $yum_repo_url = "${base_url}/${repo_name}/el/${majrel}/$::architecture/"
             }
           } else {
-            $yum_repo_url = "${base_url}/${repo_name}/el/$::operatingsystemmajrelease/$::architecture/"
+            $yum_repo_url = "${base_url}/${repo_name}/el/${majrel}/$::architecture/"
           }
         }
 
         $description = $normalized_name
         $repo_url = $::operatingsystem ? {
           /(RedHat|redhat|CentOS|centos|Scientific)/ => $yum_repo_url,
-          'Fedora' => "${base_url}/${repo_name}/fedora/$::operatingsystemmajrelease/$::architecture/",
+          'Fedora' => "${base_url}/${repo_name}/fedora/${majrel}/$::architecture/",
           'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
         }
 
