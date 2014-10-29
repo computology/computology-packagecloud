@@ -70,6 +70,7 @@ define packagecloud::repo(
 
         exec { "apt_key_add_${normalized_name}":
           command => "wget -qO - https://packagecloud.io/gpg.key | apt-key add -",
+          path => "/usr/bin/:/bin/",
           require => File["${normalized_name}"],
         }
 

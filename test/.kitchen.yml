@@ -25,7 +25,7 @@ platforms:
     driver_plugin: vagrant
     driver_config:
       box: opscode-ubuntu-14.04
-      box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-14.04_provisionerless.box
+      box_url: http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-14.04_chef-provisionerless.box
 
   - name: centos-5.10
     provisioner:
