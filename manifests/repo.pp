@@ -76,6 +76,7 @@ define packagecloud::repo(
 
         exec { "apt_get_update_${normalized_name}":
           command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
+          path => "/usr/bin/:/bin/",
           require => Exec["apt_key_add_${normalized_name}"],
         }
       }
