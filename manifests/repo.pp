@@ -42,7 +42,7 @@ define packagecloud::repo(
     $read_token = get_read_token($repo_name, $master_token)
     $base_url = build_base_url($read_token, $server_address)
   } else {
-    $base_url = ${server_address}
+    $base_url = $server_address
   }
 
   if $type == 'gem' {
