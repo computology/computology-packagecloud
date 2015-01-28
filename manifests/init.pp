@@ -2,7 +2,7 @@
 # Author: Joe Damato
 # Module Name: packagecloud
 #
-# Copyright 2014, Computology, LLC
+# Copyright 2014-2015, Computology, LLC
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

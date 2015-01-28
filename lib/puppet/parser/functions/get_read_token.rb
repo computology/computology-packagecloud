@@ -116,4 +116,15 @@ module Puppet::Parser::Functions
 
     Packagecloud::API.new(repo, master_token, os, dist, hostname).read_token
   end
+
+  newfunction(:build_base_url, :type => :rvalue) do |args|
+    read_token = args[0]
+    server_address = args[1]
+
+    uri = URI(server_address)
+    uri.user = read_token
+    uri.password = ''
+
+    uri.to_s
+  end
 end
