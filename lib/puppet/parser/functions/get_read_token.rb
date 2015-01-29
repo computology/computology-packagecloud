@@ -23,16 +23,19 @@ require "net/https"
 
 module Packagecloud
   class API
-    BASE_URL = "https://packagecloud.io/install/repositories/"
-
     attr_reader :name
 
-    def initialize(name, master_token, os, dist, hostname)
+    def initialize(name, master_token, server_address, os, dist, hostname)
       @name         = name
       @master_token = master_token
       @os           = os
       @dist         = dist
       @hostname     = hostname
+      @base_url     = "https://https://packagecloud.io/install/repositories/"
+
+      if !server_address.nil?
+        @base_url = server_address
+      end
 
       @endpoint_params = {
         :os   => os,
@@ -60,7 +63,7 @@ module Packagecloud
     end
 
     def uri_for(resource)
-      URI(BASE_URL + "#{@name}/#{resource}").tap do |uri|
+      URI(@base_url + "#{@name}/#{resource}").tap do |uri|
         uri.user = @master_token
       end
     end
@@ -109,12 +112,13 @@ module Puppet::Parser::Functions
   newfunction(:get_read_token, :type => :rvalue) do |args|
     repo = args[0]
     master_token = args[1]
+    server_address = args[2]
 
     os = lookupvar('::operatingsystem').downcase
     dist = lookupvar('::operatingsystemrelease')
     hostname = lookupvar('::fqdn')
 
-    Packagecloud::API.new(repo, master_token, os, dist, hostname).read_token
+    Packagecloud::API.new(repo, master_token, server_address, os, dist, hostname).read_token
   end
 
   newfunction(:build_base_url, :type => :rvalue) do |args|
