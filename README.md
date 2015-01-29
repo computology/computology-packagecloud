@@ -46,6 +46,17 @@ packagecloud::repo { "username/privaterepo":
 }
 ```
 
+packagecloud: enterprise users can specify the host and port by setting
+`server_address`:
+
+```
+packagecloud::repo { "username/privaterepo":
+  type => 'deb',
+  master_token => 'eae123bca276162f376b9614ba134fa7993624a8de0bb3a2',
+  server_address => 'http://my.internal.server.domain/',
+}
+```
+
 If you need to install more than one type of package from the same repository
 (for example, gem and deb files from username/publicrepo) you can use the
 `fq_name` parameter:
