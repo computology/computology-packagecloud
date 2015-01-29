@@ -115,7 +115,8 @@ define packagecloud::repo(
         }
 
         $gpg_url = "${base_url}/gpg.key"
-        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud"
+        $gpg_key_filename = get_gpg_key_filename($server_address)
+        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-${gpg_key_filename}"
 
         exec { "import_gpg_${normalized_name}":
           command => "wget -qO ${gpg_file_path} ${gpg_url}",
