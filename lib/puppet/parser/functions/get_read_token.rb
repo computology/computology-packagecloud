@@ -31,7 +31,7 @@ module Packagecloud
       @os           = os
       @dist         = dist
       @hostname     = hostname
-      @base_url     = "https://https://packagecloud.io/install/repositories/"
+      @base_url     = "https://packagecloud.io/install/repositories/"
 
       if !server_address.nil?
         @base_url = server_address
