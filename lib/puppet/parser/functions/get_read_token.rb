@@ -35,7 +35,7 @@ module Packagecloud
       @base_url     = "https://packagecloud.io/install/repositories/"
 
       if !server_address.nil?
-        @base_url = URI.join(server_address, "/install/repositories/")
+        @base_url = URI.join(server_address, "/install/repositories/").to_s
       end
 
       @endpoint_params = {
@@ -64,8 +64,7 @@ module Packagecloud
     end
 
     def uri_for(resource)
-      joined_uri = URI.join(@base_url, "#{@name}/#{resource}")
-      URI(joined_uri).tap do |uri|
+      URI.join(@base_url, "#{@name}/#{resource}").tap do |uri|
         uri.user = @master_token
       end
     end
