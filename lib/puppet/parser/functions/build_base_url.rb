@@ -2,7 +2,7 @@
 # Author: Joe Damato
 # Module Name: packagecloud
 #
-# Copyright 2014, Computology, LLC
+# Copyright 2014-2015, Computology, LLC
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,17 @@
 # limitations under the License.
 #
 
-require 'uri'
-
-module Packagecloud
-  class GPG
-    def self.compute_filename(server_address)
-      URI.parse(server_address).host.gsub!('.', '_')
-    end
-  end
-end
+require "uri"
 
 module Puppet::Parser::Functions
-  newfunction(:get_gpg_key_filename, :type => :rvalue) do |args|
-    server_address = args[0]
-    Packagecloud::GPG.compute_filename(server_address)
+  newfunction(:build_base_url, :type => :rvalue) do |args|
+    read_token = args[0]
+    server_address = args[1]
+
+    uri = URI(server_address)
+    uri.user = read_token
+    uri.password = ''
+
+    uri.to_s
   end
 end

@@ -2,7 +2,7 @@
 # Author: Joe Damato
 # Module Name: packagecloud
 #
-# Copyright 2014, Computology, LLC
+# Copyright 2014-2015, Computology, LLC
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,16 +123,5 @@ module Puppet::Parser::Functions
     hostname = lookupvar('::fqdn')
 
     Packagecloud::API.new(repo, master_token, server_address, os, dist, hostname).read_token
-  end
-
-  newfunction(:build_base_url, :type => :rvalue) do |args|
-    read_token = args[0]
-    server_address = args[1]
-
-    uri = URI(server_address)
-    uri.user = read_token
-    uri.password = ''
-
-    uri.to_s
   end
 end
