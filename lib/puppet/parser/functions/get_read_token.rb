@@ -19,6 +19,7 @@
 #
 
 require "uri"
+require 'net/http'
 require "net/https"
 
 module Packagecloud
@@ -34,7 +35,7 @@ module Packagecloud
       @base_url     = "https://packagecloud.io/install/repositories/"
 
       if !server_address.nil?
-        @base_url = server_address
+        @base_url = URI.join(server_address, "/install/repositories/")
       end
 
       @endpoint_params = {
@@ -63,7 +64,8 @@ module Packagecloud
     end
 
     def uri_for(resource)
-      URI(@base_url + "#{@name}/#{resource}").tap do |uri|
+      joined_uri = URI.join(@base_url, "#{@name}/#{resource}")
+      URI(joined_uri).tap do |uri|
         uri.user = @master_token
       end
     end
@@ -87,16 +89,18 @@ module Packagecloud
         request.basic_auth uri.user.to_s, uri.password.to_s
       end
 
-      http(uri.host, uri.port, request)
+      http(uri.scheme, uri.host, uri.port, request)
     end
 
-    def http(host, port, request)
+    def http(scheme, host, port, request)
       http = Net::HTTP.new(host, port)
-      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      http.use_ssl = true
-      store = OpenSSL::X509::Store.new
-      store.set_default_paths
-      http.cert_store = store
+      if scheme == "https"
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        http.use_ssl = true
+        store = OpenSSL::X509::Store.new
+        store.set_default_paths
+        http.cert_store = store
+      end
 
       case res = http.start { |http| http.request(request) }
       when Net::HTTPSuccess, Net::HTTPRedirection
