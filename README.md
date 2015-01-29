@@ -53,7 +53,7 @@ packagecloud: enterprise users can specify the host and port by setting
 packagecloud::repo { "username/privaterepo":
   type => 'deb',
   master_token => 'eae123bca276162f376b9614ba134fa7993624a8de0bb3a2',
-  server_address => 'http://my.internal.server.domain/',
+  server_address => 'http://my.internal.server.domain:1234/',
 }
 ```
 
