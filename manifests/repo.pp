@@ -2,7 +2,7 @@
 # Author: Joe Damato
 # Module Name: packagecloud
 #
-# Copyright 2014, Computology, LLC
+# Copyright 2014-2015, Computology, LLC
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ define packagecloud::repo(
   $fq_name = undef,
   $master_token = undef,
   $priority = undef,
+  $server_address = "https://packagecloud.io",
 ) {
   validate_string($type)
   validate_string($master_token)
@@ -38,13 +39,10 @@ define packagecloud::repo(
   $normalized_name = regsubst($repo_name, '\/', '_')
 
   if $master_token != undef {
-    $read_token = get_read_token($repo_name, $master_token)
-  }
-
-  if $read_token {
-    $base_url = "https://${read_token}:@packagecloud.io"
+    $read_token = get_read_token($repo_name, $master_token, $server_address)
+    $base_url = build_base_url($read_token, $server_address)
   } else {
-    $base_url = "https://packagecloud.io"
+    $base_url = $server_address
   }
 
   if $type == 'gem' {
@@ -69,7 +67,7 @@ define packagecloud::repo(
         }
 
         exec { "apt_key_add_${normalized_name}":
-          command => "wget -qO - https://packagecloud.io/gpg.key | apt-key add -",
+          command => "wget -qO - ${server_address}/gpg.key | apt-key add -",
           path => "/usr/bin/:/bin/",
           require => File["${normalized_name}"],
         }
@@ -100,7 +98,7 @@ define packagecloud::repo(
         if $::operatingsystem =~ /(RedHat|redhat|CentOS|centos|Scientific)/ {
           if $read_token {
             if $majrel == '5' {
-              $yum_repo_url = "https://packagecloud.io/priv/${read_token}/${repo_name}/el/5/$::architecture/"
+              $yum_repo_url = "${server_address}/priv/${read_token}/${repo_name}/el/5/$::architecture/"
             } else {
               $yum_repo_url = "${base_url}/${repo_name}/el/${majrel}/$::architecture/"
             }
@@ -116,8 +114,9 @@ define packagecloud::repo(
           'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
         }
 
-        $gpg_url = "https://packagecloud.io/gpg.key"
-        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud"
+        $gpg_url = "${base_url}/gpg.key"
+        $gpg_key_filename = get_gpg_key_filename($server_address)
+        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-${gpg_key_filename}"
 
         exec { "import_gpg_${normalized_name}":
           command => "wget -qO ${gpg_file_path} ${gpg_url}",

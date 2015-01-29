@@ -2,7 +2,7 @@
 # Author: Joe Damato
 # Module Name: packagecloud
 #
-# Copyright 2014, Computology, LLC
+# Copyright 2014-2015, Computology, LLC
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,20 +19,24 @@
 #
 
 require "uri"
+require 'net/http'
 require "net/https"
 
 module Packagecloud
   class API
-    BASE_URL = "https://packagecloud.io/install/repositories/"
-
     attr_reader :name
 
-    def initialize(name, master_token, os, dist, hostname)
+    def initialize(name, master_token, server_address, os, dist, hostname)
       @name         = name
       @master_token = master_token
       @os           = os
       @dist         = dist
       @hostname     = hostname
+      @base_url     = "https://packagecloud.io/install/repositories/"
+
+      if !server_address.nil?
+        @base_url = URI.join(server_address, "/install/repositories/").to_s
+      end
 
       @endpoint_params = {
         :os   => os,
@@ -60,7 +64,7 @@ module Packagecloud
     end
 
     def uri_for(resource)
-      URI(BASE_URL + "#{@name}/#{resource}").tap do |uri|
+      URI.join(@base_url, "#{@name}/#{resource}").tap do |uri|
         uri.user = @master_token
       end
     end
@@ -84,16 +88,18 @@ module Packagecloud
         request.basic_auth uri.user.to_s, uri.password.to_s
       end
 
-      http(uri.host, uri.port, request)
+      http(uri.scheme, uri.host, uri.port, request)
     end
 
-    def http(host, port, request)
+    def http(scheme, host, port, request)
       http = Net::HTTP.new(host, port)
-      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      http.use_ssl = true
-      store = OpenSSL::X509::Store.new
-      store.set_default_paths
-      http.cert_store = store
+      if scheme == "https"
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        http.use_ssl = true
+        store = OpenSSL::X509::Store.new
+        store.set_default_paths
+        http.cert_store = store
+      end
 
       case res = http.start { |http| http.request(request) }
       when Net::HTTPSuccess, Net::HTTPRedirection
@@ -109,11 +115,12 @@ module Puppet::Parser::Functions
   newfunction(:get_read_token, :type => :rvalue) do |args|
     repo = args[0]
     master_token = args[1]
+    server_address = args[2]
 
     os = lookupvar('::operatingsystem').downcase
     dist = lookupvar('::operatingsystemrelease')
     hostname = lookupvar('::fqdn')
 
-    Packagecloud::API.new(repo, master_token, os, dist, hostname).read_token
+    Packagecloud::API.new(repo, master_token, server_address, os, dist, hostname).read_token
   end
 end

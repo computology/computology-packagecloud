@@ -18,20 +18,19 @@
 # limitations under the License.
 #
 
-class packagecloud() {
-    case $::operatingsystem {
-      'debian', 'ubuntu': {
-        package { 'apt-transport-https':
-          ensure => latest,
-        }
-      }
-      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
-        package { 'pygpgme':
-          ensure => latest,
-        }
-      }
-      default: {
-        fail("Sorry, $::operatingsystem isn't supported. Email support@packagecloud.io for help.")
-      }
-    }
-}
+require 'uri'
+
+module Packagecloud
+  class GPG
+    def self.compute_filename(server_address)
+      URI.parse(server_address).host.gsub!('.', '_')
+    end
+  end
+end
+
+module Puppet::Parser::Functions
+  newfunction(:get_gpg_key_filename, :type => :rvalue) do |args|
+    server_address = args[0]
+    Packagecloud::GPG.compute_filename(server_address)
+  end
+end

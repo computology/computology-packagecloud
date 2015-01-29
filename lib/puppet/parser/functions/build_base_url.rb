@@ -18,20 +18,17 @@
 # limitations under the License.
 #
 
-class packagecloud() {
-    case $::operatingsystem {
-      'debian', 'ubuntu': {
-        package { 'apt-transport-https':
-          ensure => latest,
-        }
-      }
-      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
-        package { 'pygpgme':
-          ensure => latest,
-        }
-      }
-      default: {
-        fail("Sorry, $::operatingsystem isn't supported. Email support@packagecloud.io for help.")
-      }
-    }
-}
+require "uri"
+
+module Puppet::Parser::Functions
+  newfunction(:build_base_url, :type => :rvalue) do |args|
+    read_token = args[0]
+    server_address = args[1]
+
+    uri = URI(server_address)
+    uri.user = read_token
+    uri.password = ''
+
+    uri.to_s
+  end
+end
