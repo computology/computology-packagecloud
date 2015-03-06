@@ -85,7 +85,7 @@ define packagecloud::repo(
     }
   } elsif $type == 'rpm' {
     case $::operatingsystem {
-      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
+      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific', 'OracleLinux', 'OEL': {
 
         $majrel = $::osreleasemaj
         if $::pygpgme_installed == 'false' {
@@ -95,21 +95,31 @@ define packagecloud::repo(
           $repo_gpgcheck = 1
         }
 
-        if $::operatingsystem =~ /(RedHat|redhat|CentOS|centos|Scientific)/ {
-          if $read_token {
-            if $majrel == '5' {
-              $yum_repo_url = "${server_address}/priv/${read_token}/${repo_name}/el/5/$::architecture/"
-            } else {
-              $yum_repo_url = "${base_url}/${repo_name}/el/${majrel}/$::architecture/"
+        if $read_token {
+          if $majrel == '5' {
+            $yum_repo_url = $::operatingsystem ? {
+              /(RedHat|redhat|CentOS|centos)/ => "${server_address}/priv/${read_token}/${repo_name}/el/5/$::architecture/",
+              /(OracleLinux|OEL)/ => "${server_address}/priv/${read_token}/${repo_name}/ol/5/$::architecture/",
+              'Scientific' => "${server_address}/priv/${read_token}/${repo_name}/scientific/5/$::architecture/",
             }
           } else {
-            $yum_repo_url = "${base_url}/${repo_name}/el/${majrel}/$::architecture/"
+            $yum_repo_url = $::operatingsystem ? {
+              /(RedHat|redhat|CentOS|centos)/ => "${base_url}/${repo_name}/el/${majrel}/$::architecture/",
+              /(OracleLinux|OEL)/ => "${base_url}/${repo_name}/ol/${majrel}/$::architecture/",
+              'Scientific' => "${base_url}/${repo_name}/scientific/${majrel}/$::architecture/",
+            }
+          }
+        } else {
+          $yum_repo_url = $::operatingsystem ? {
+            /(RedHat|redhat|CentOS|centos)/ => "${base_url}/${repo_name}/el/${majrel}/$::architecture/",
+            /(OracleLinux|OEL)/ => "${base_url}/${repo_name}/ol/${majrel}/$::architecture/",
+            'Scientific' => "${base_url}/${repo_name}/scientific/${majrel}/$::architecture/",
           }
         }
 
         $description = $normalized_name
         $repo_url = $::operatingsystem ? {
-          /(RedHat|redhat|CentOS|centos|Scientific)/ => $yum_repo_url,
+          /(RedHat|redhat|CentOS|centos|Scientific|OracleLinux|OEL)/ => $yum_repo_url,
           'Fedora' => "${base_url}/${repo_name}/fedora/${majrel}/$::architecture/",
           'Amazon' => "${base_url}/${repo_name}/el/6/$::architecture",
         }

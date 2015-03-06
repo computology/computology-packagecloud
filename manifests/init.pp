@@ -25,7 +25,7 @@ class packagecloud() {
           ensure => latest,
         }
       }
-      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific': {
+      'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific', 'OracleLinux', 'OEL': {
         package { 'pygpgme':
           ensure => latest,
         }
