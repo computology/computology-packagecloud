@@ -55,6 +55,7 @@ GEM
       hiera (~> 1.0)
       json_pure
       rgen (~> 0.6.5)
+    puppet-lint (1.1.0)
     puppet_forge (1.0.3)
       her (~> 0.6)
     rgen (0.6.6)
@@ -99,5 +100,6 @@ DEPENDENCIES
   librarian-puppet
   psych
   puppet
+  puppet-lint
   serverspec
   test-kitchen
