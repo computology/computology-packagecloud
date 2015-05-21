@@ -1,10 +1,16 @@
 Facter.add('pygpgme_installed') do
   setcode do
-    output = Facter::Core::Execution.exec('rpm -qa | grep pygpgme')
-    if !/^pygpgme.*/.match(output).nil?
+    os = Facter.value(:operatingsystem)
+    case os.downcase
+    when /debian|ubuntu/
       'true'
     else
-      'false'
+      output = Facter::Core::Execution.exec('rpm -qa | grep pygpgme')
+      if !/^pygpgme.*/.match(output).nil?
+        'true'
+      else
+        'false'
+      end
     end
   end
 end
