@@ -3,7 +3,7 @@
   "version": "0.2.10",
   "author": "Computology, LLC",
   "summary": "packagecloud.io puppet integration",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "source": "https://github.com/computology/computology-packagecloud",
   "project_page": "https://github.com/computology/computology-packagecloud",
   "issues_url": "https://github.com/computology/computology-packagecloud/issues",
