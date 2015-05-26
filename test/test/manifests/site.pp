@@ -12,8 +12,9 @@ case $operatingsystem {
     case $::operatingsystemrelease {
       /^5.*/: {
         package { 'epel5':
-          ensure => present,
-          source => 'http://mirror.vcu.edu/pub/gnu_linux/epel/5/i386/epel-release-5-4.noarch.rpm',
+          ensure   => present,
+          source   => 'http://mirror.vcu.edu/pub/gnu_linux/epel/5/i386/epel-release-5-4.noarch.rpm',
+          provider => 'rpm',
         }
       }
       default: {}
