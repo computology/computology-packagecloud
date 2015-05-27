@@ -88,7 +88,7 @@ define packagecloud::repo(
       'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific', 'OracleLinux', 'OEL': {
 
         $majrel = $::osreleasemaj
-        if $::pygpgme_installed == false {
+        if $::pygpgme_installed == 'false' {
           warning('The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/stahnma/puppet-module-epel')
           $repo_gpgcheck = 0
         } else {
