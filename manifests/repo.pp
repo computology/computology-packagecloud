@@ -143,9 +143,10 @@ define packagecloud::repo(
         }
 
         exec { "yum_make_cache_${repo_name}":
-          command => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
-          path => "/usr/bin",
-          require => File["${normalized_name}"],
+          refreshonly => true,
+          command     => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
+          path        => "/usr/bin",
+          require     => File["${normalized_name}"],
         }
       }
 
