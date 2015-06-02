@@ -55,27 +55,35 @@ define packagecloud::repo(
     case $osname {
       'debian', 'ubuntu': {
 
+        #include puppetlabs-apt module
+        include apt
+
         $component = 'main'
         $repo_url = "${base_url}/${repo_name}/${osname}"
         $distribution =  $::lsbdistcodename
 
-        file { "${normalized_name}":
-          path    => "/etc/apt/sources.list.d/${normalized_name}.list",
-          ensure  => file,
-          mode    => 0644,
-          content => template('packagecloud/apt.erb'),
-        }
-
-        exec { "apt_key_add_${normalized_name}":
-          command => "wget -qO - ${server_address}/gpg.key | apt-key add -",
-          path => "/usr/bin/:/bin/",
-          require => File["${normalized_name}"],
-        }
-
-        exec { "apt_get_update_${normalized_name}":
-          command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
-          path => "/usr/bin/:/bin/",
-          require => Exec["apt_key_add_${normalized_name}"],
+        #Create the repository resource
+        apt::source { "${normalized_name}":
+          comment  => "${normalized_name}",
+          ensure   => 'present',
+          location => "${repo_url}",
+          release  => "${distribution}",
+          repos    => "${component}",
+          include  => {
+            'deb'    => true,
+            'src'    => true,
+          },
+          key      => {
+            'server'  => "${server_address}",
+            'source'  => "${server_address}/gpg.key",
+          },
+        }          
+        
+        #Set apt update frequency
+        class { 'apt':
+          update => {
+            frequency => 'daily',
+          },
         }
       }
 
@@ -128,27 +136,22 @@ define packagecloud::repo(
         $gpg_key_filename = get_gpg_key_filename($server_address)
         $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-${gpg_key_filename}"
 
-        exec { "import_gpg_${normalized_name}":
-          command => "wget -qO ${gpg_file_path} ${gpg_url}",
-          path => "/usr/bin",
-          creates => $gpg_file_path,
+        #create the repository resource
+        yumrepo { "${normalized_name}":
+          baseurl    => "${repo_url}", 
+          descr      => "${description}",
+          enabled    => 1,
+          ensure     => 'present',
+          gpgcheck   => 0,
+          gpgkey     => "$gpg_url",
+          priority   => $priority,
+          repo_gpgcheck => $repo_gpgcheck,
+          sslcacert  => '/etc/pki/tls/certs/ca-bundle.crt',
+          sslverify => 1,
         }
-
-        file { "${normalized_name}":
-          path    => "/etc/yum.repos.d/${normalized_name}.repo",
-          ensure  => file,
-          mode    => 0644,
-          content => template('packagecloud/yum.erb'),
-          require => Exec["import_gpg_${normalized_name}"],
-        }
-
-        exec { "yum_make_cache_${repo_name}":
-          refreshonly => true,
-          command     => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
-          path        => "/usr/bin",
-          subscribe   => File["${normalized_name}"],
-        }
+ 
       }
+
 
       default: {
         fail("Sorry, $::operatingsystem isn't supported for yum repos at this time. Email support@packagecloud.io")
