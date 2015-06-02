@@ -146,7 +146,7 @@ define packagecloud::repo(
           refreshonly => true,
           command     => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
           path        => "/usr/bin",
-          require     => File["${normalized_name}"],
+          subscribe   => File["${normalized_name}"],
         }
       }
 
