@@ -143,9 +143,9 @@ define packagecloud::repo(
           enabled    => 1,
           ensure     => 'present',
           gpgcheck   => 0,
-          gpgkey     => "$gpg_url",
-          priority   => $priority,
-          repo_gpgcheck => $repo_gpgcheck,
+          gpgkey     => "${gpg_url}",
+          priority   => ${priority},
+          repo_gpgcheck => ${repo_gpgcheck},
           sslcacert  => '/etc/pki/tls/certs/ca-bundle.crt',
           sslverify => 1,
         }
