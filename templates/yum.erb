@@ -4,12 +4,18 @@
 [<%= @normalized_name %>]
 name=<%= @description %>
 baseurl=<%= @repo_url %>
-repo_gpgcheck=<%= @repo_gpgcheck %>
 <% if @priority -%>
 priority=<%=@priority %>
 <% end -%>
-gpgcheck=0
+gpgcheck=1
+<% if @enabled -%>
 enabled=1
+<% else %>
+enabled=0
+<% end -%>
 gpgkey=file://<%= @gpg_file_path %>
 sslverify=1
 sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+<% if @proxy -%>
+proxy=<%=@proxy %>
+<% end -%>

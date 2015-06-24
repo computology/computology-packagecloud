@@ -23,6 +23,8 @@ define packagecloud::repo(
   $fq_name = undef,
   $master_token = undef,
   $priority = undef,
+  $proxy = undef,
+  $enabled = true,
   $server_address = "https://packagecloud.io",
 ) {
   validate_string($type)
