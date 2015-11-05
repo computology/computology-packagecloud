@@ -2,3 +2,4 @@
 .kitchen.local.yml
 .tmp/
 modules/
+.librarian/
