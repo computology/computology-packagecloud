@@ -29,6 +29,7 @@ define packagecloud::repo(
   validate_string($master_token)
 
   include packagecloud
+  include ::apt 
 
   if $fq_name != undef {
     $repo_name = $fq_name
@@ -60,23 +61,13 @@ define packagecloud::repo(
         $repo_url = "${base_url}/${repo_name}/${osname}"
         $distribution =  $::lsbdistcodename
 
-        file { $normalized_name:
-          ensure  => file,
-          path    => "/etc/apt/sources.list.d/${normalized_name}.list",
-          mode    => '0644',
-          content => template('packagecloud/apt.erb'),
-        }
-
-        exec { "apt_key_add_${normalized_name}":
-          command => "wget -qO - ${server_address}/gpg.key | apt-key add -",
-          path    => '/usr/bin/:/bin/',
-          require => File[$normalized_name],
-        }
-
-        exec { "apt_get_update_${normalized_name}":
-          command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
-          path    => '/usr/bin/:/bin/',
-          require => Exec["apt_key_add_${normalized_name}"],
+        apt::source {"${normalized_name}":
+          location => "${repo_url}",
+          repos    => "${component}",
+          key      => {
+            'id'     => '418A7F2FB0E1E6E7EABF6FE8C2E73424D59097AB',
+            'server' => 'packagecloud.io'
+          }
         }
       }
 
