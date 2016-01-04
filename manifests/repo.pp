@@ -54,20 +54,21 @@ define packagecloud::repo(
         repo_name => $repo_name,
       }
     }
-    'deb': {
-      $osname = downcase($::operatingsystem)
-      case $osname {
-        'debian', 'ubuntu': {
+  } elsif $type == 'deb' {
+    $osname = downcase($::operatingsystem)
+    case $osname {
+      'debian', 'ubuntu': {
 
-          $component = 'main'
-          $repo_url = "${base_url}/${repo_name}/${osname}"
-          $distribution =  $::lsbdistcodename
+        $component = 'main'
+        $repo_url = "${base_url}/${repo_name}/${osname}"
+        $distribution =  $::lsbdistcodename
 
-          file { $normalized_name:
-            ensure  => file,
-            path    => "/etc/apt/sources.list.d/${normalized_name}.list",
-            mode    => '0644',
-            content => template('packagecloud/apt.erb'),
+        apt::source {"${normalized_name}":
+          location => "${repo_url}",
+          repos    => "${component}",
+          key      => {
+            'id'     => '418A7F2FB0E1E6E7EABF6FE8C2E73424D59097AB',
+            'server' => 'pgp.mit.edu'
           }
 
           exec { "apt_key_add_${normalized_name}":
