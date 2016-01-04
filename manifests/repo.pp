@@ -66,7 +66,7 @@ define packagecloud::repo(
           repos    => "${component}",
           key      => {
             'id'     => '418A7F2FB0E1E6E7EABF6FE8C2E73424D59097AB',
-            'server' => 'packagecloud.io'
+            'server' => 'pgp.mit.edu'
           }
         }
       }
