@@ -68,7 +68,7 @@ define packagecloud::repo(
         }
 
         exec { "apt_key_add_${normalized_name}":
-          command => "wget -qO - ${server_address}/gpg.key | apt-key add -",
+          command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
           path    => '/usr/bin/:/bin/',
           require => File[$normalized_name],
         }
@@ -103,12 +103,14 @@ define packagecloud::repo(
               /(OracleLinux|OEL)/ => "${server_address}/priv/${read_token}/${repo_name}/ol/5/${::architecture}/",
               'Scientific' => "${server_address}/priv/${read_token}/${repo_name}/scientific/5/${::architecture}/",
             }
+            $gpg_url = "${server_address}/priv/${read_token}/${repo_name}/gpgkey"
           } else {
             $yum_repo_url = $::operatingsystem ? {
               /(RedHat|redhat|CentOS|centos)/ => "${base_url}/${repo_name}/el/${majrel}/${::architecture}/",
               /(OracleLinux|OEL)/ => "${base_url}/${repo_name}/ol/${majrel}/${::architecture}/",
               'Scientific' => "${base_url}/${repo_name}/scientific/${majrel}/${::architecture}/",
             }
+            $gpg_url = "${base_url}/${repo_name}/gpgkey"
           }
         } else {
           $yum_repo_url = $::operatingsystem ? {
@@ -116,6 +118,7 @@ define packagecloud::repo(
             /(OracleLinux|OEL)/ => "${base_url}/${repo_name}/ol/${majrel}/${::architecture}/",
             'Scientific' => "${base_url}/${repo_name}/scientific/${majrel}/${::architecture}/",
           }
+          $gpg_url = "${base_url}/${repo_name}/gpgkey"
         }
 
         $description = $normalized_name
@@ -125,22 +128,11 @@ define packagecloud::repo(
           'Amazon' => "${base_url}/${repo_name}/el/6/${::architecture}",
         }
 
-        $gpg_url = "${base_url}/gpg.key"
-        $gpg_key_filename = get_gpg_key_filename($server_address)
-        $gpg_file_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-${gpg_key_filename}"
-
-        exec { "import_gpg_${normalized_name}":
-          command => "wget -qO ${gpg_file_path} ${gpg_url}",
-          path    => '/usr/bin',
-          creates => $gpg_file_path,
-        }
-
         file { $normalized_name:
           ensure  => file,
           path    => "/etc/yum.repos.d/${normalized_name}.repo",
           mode    => '0644',
           content => template('packagecloud/yum.erb'),
-          require => Exec["import_gpg_${normalized_name}"],
         }
 
         exec { "yum_make_cache_${repo_name}":

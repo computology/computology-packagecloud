@@ -10,6 +10,6 @@ priority=<%=@priority %>
 <% end -%>
 gpgcheck=0
 enabled=1
-gpgkey=file://<%= @gpg_file_path %>
+gpgkey=<%= @gpg_url %>
 sslverify=1
 sslcacert=/etc/pki/tls/certs/ca-bundle.crt
