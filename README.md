@@ -36,11 +36,11 @@ packagecloud.io repositories installed on your infrastructure.
 Simply install the packagecloud puppet module and you will be able to use the packagecloud::repo resource in your manifests:
 
 ```
-packagecloud::repo { "username/publicrepo":
+packagecloud::repo { 'username/publicrepo':
   type => 'rpm',
 }
 
-packagecloud::repo { "username/privaterepo":
+packagecloud::repo { 'username/privaterepo':
   type => 'deb',
   master_token => 'eae123bca276162f376b9614ba134fa7993624a8de0bb3a2',
 }
@@ -50,7 +50,7 @@ packagecloud: enterprise users can specify the host and port by setting
 `server_address`:
 
 ```
-packagecloud::repo { "username/privaterepo":
+packagecloud::repo { 'username/privaterepo':
   type => 'deb',
   master_token => 'eae123bca276162f376b9614ba134fa7993624a8de0bb3a2',
   server_address => 'http://my.internal.server.domain:1234/',
@@ -62,12 +62,12 @@ If you need to install more than one type of package from the same repository
 `fq_name` parameter:
 
 ```
-packagecloud::repo { "deb repository for blah":
+packagecloud::repo { 'deb repository for blah':
   fq_name => "username/blah",
   type => 'rpm',
 }
 
-packagecloud::repo { "gem repository for blah":
+packagecloud::repo { 'gem repository for blah':
   fq_name => "username/blah",
   type => 'gem',
 }
