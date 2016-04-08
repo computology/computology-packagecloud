@@ -123,18 +123,33 @@ define packagecloud::repo(
             $gpg_url = "${base_url}/${repo_name}/gpgkey"
           }
 
-          $description = $normalized_name
           $repo_url = $::operatingsystem ? {
             /(RedHat|redhat|CentOS|centos|Scientific|OracleLinux|OEL)/ => $yum_repo_url,
             'Fedora' => "${base_url}/${repo_name}/fedora/${majrel}/${::architecture}/",
             'Amazon' => "${base_url}/${repo_name}/el/6/${::architecture}",
           }
 
-          file { $normalized_name:
-            ensure  => file,
-            path    => "/etc/yum.repos.d/${normalized_name}.repo",
-            mode    => '0644',
-            content => template('packagecloud/yum.erb'),
+          if versioncmp($::puppetversion, '3.5') >= 0 {
+            yumrepo { $normalized_name:
+              ensure        => present,
+              baseurl       => $repo_url,
+              repo_gpgcheck => $repo_gpgcheck,
+              descr         => $normalized_name,
+              gpgkey        => $gpg_url,
+              priority      => $priority,
+              gpgcheck      => '0',
+              before        => Exec["yum_make_cache_${repo_name}"],
+            }
+          }
+          else {
+            file { "/etc/yum.repos.d/${normalized_name}.repo":
+             ensure  => file,
+             mode    => '0644',
+             owner   => 'root',
+             group   => 'root',
+             content => template('packagecloud/yum.erb'),
+             before        => Exec["yum_make_cache_${repo_name}"],
+           }
           }
 
           exec { "yum_make_cache_${repo_name}":

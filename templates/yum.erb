@@ -2,7 +2,7 @@
 # module 'packagecloud'
 
 [<%= @normalized_name %>]
-name=<%= @description %>
+name=<%= @normalized_name %>
 baseurl=<%= @repo_url %>
 repo_gpgcheck=<%= @repo_gpgcheck %>
 <% if @priority -%>
