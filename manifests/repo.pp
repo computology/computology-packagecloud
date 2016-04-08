@@ -28,7 +28,7 @@ define packagecloud::repo(
   validate_string($type)
   validate_string($master_token)
 
-  include packagecloud
+  include ::packagecloud
 
   if $fq_name != undef {
     $repo_name = $fq_name
