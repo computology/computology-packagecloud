@@ -23,6 +23,7 @@ define packagecloud::repo(
   $fq_name = undef,
   $master_token = undef,
   $priority = undef,
+  $metadata_expire = 300,
   $server_address = 'https://packagecloud.io',
 ) {
   validate_string($type)
