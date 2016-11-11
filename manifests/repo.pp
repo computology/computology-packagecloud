@@ -75,7 +75,7 @@ define packagecloud::repo(
             command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
             path    => '/usr/bin/:/bin/',
             require => File[$normalized_name],
-            unless  => "apt-key exportall | gpg --with-fingerprint | grep \"$(curl -L ${base_url}/${repo_name}/gpgkey | gpg --with-fingerprint $line | head -2 | tail -1 | cut -d'=' -f2 | cut -d ' ' -$
+            unless  => "apt-key exportall | gpg --with-fingerprint | grep \"$(curl -L ${base_url}/${repo_name}/gpgkey | gpg --with-fingerprint $line | head -2 | tail -1 | cut -d'=' -f2 | cut -d ' ' -f2-12)\"",
             notify  => Exec["apt_get_update_${normalized_name}"],
           }
 
