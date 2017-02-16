@@ -9,7 +9,7 @@
   "issues_url": "https://github.com/computology/computology-packagecloud/issues",
   "dependencies": [
     {
-      "version_range": ">= 1.0.0",
+      "version_range": ">= 3.2.0",
       "name": "puppetlabs-stdlib"
     }
   ]
