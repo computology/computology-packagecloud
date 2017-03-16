@@ -68,18 +68,22 @@ define packagecloud::repo(
             path    => "/etc/apt/sources.list.d/${normalized_name}.list",
             mode    => '0644',
             content => template('packagecloud/apt.erb'),
+            notify  => Exec["apt_get_update_${normalized_name}"],
           }
 
           exec { "apt_key_add_${normalized_name}":
             command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
             path    => '/usr/bin/:/bin/',
             require => File[$normalized_name],
+            unless  => "apt-key exportall | gpg --with-fingerprint | grep \"$(curl -L ${base_url}/${repo_name}/gpgkey | gpg --with-fingerprint $line | head -2 | tail -1 | cut -d'=' -f2 | cut -d ' ' -f2-12)\"",
+            notify  => Exec["apt_get_update_${normalized_name}"],
           }
 
           exec { "apt_get_update_${normalized_name}":
             command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
             path    => '/usr/bin/:/bin/',
             require => Exec["apt_key_add_${normalized_name}"],
+            refreshonly => true,
           }
         }
         default: {
