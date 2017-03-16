@@ -26,8 +26,8 @@ define packagecloud::repo(
   $metadata_expire = 300,
   $server_address = 'https://packagecloud.io',
 ) {
-  validate_string($type)
-  validate_string($master_token)
+  validate_legacy("Optional[String]", "validate_string", $type)
+  validate_legacy("Optional[String]", "validate_string", $master_token)
 
   include ::packagecloud
 
