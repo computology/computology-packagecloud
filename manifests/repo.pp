@@ -25,6 +25,7 @@ define packagecloud::repo(
   $priority = undef,
   $metadata_expire = 300,
   $server_address = 'https://packagecloud.io',
+  $always_update_cache = true,
 ) {
   validate_string($type)
   validate_string($master_token)
@@ -80,6 +81,13 @@ define packagecloud::repo(
             command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
             path    => '/usr/bin/:/bin/',
             require => Exec["apt_key_add_${normalized_name}"],
+          }
+
+          unless $always_update_cache {
+            Exec["apt_get_update_${normalized_name}"]{
+              subscribe   => File[$normalized_name],
+              refreshonly => true,
+            }
           }
         }
         default: {
@@ -143,6 +151,14 @@ define packagecloud::repo(
             path    => '/usr/bin',
             require => File[$normalized_name],
           }
+
+          unless $always_update_cache {
+            Exec["yum_make_cache_${repo_name}"]{
+              subscribe   => File[$normalized_name],
+              refreshonly => true,
+            }
+          }
+
         }
 
         default: {
