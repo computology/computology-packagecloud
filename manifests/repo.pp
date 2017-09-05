@@ -68,18 +68,20 @@ define packagecloud::repo(
             path    => "/etc/apt/sources.list.d/${normalized_name}.list",
             mode    => '0644',
             content => template('packagecloud/apt.erb'),
-          }
+	    notify	=> Exec["apt_key_add_${normalized_name}"],
+          } ->
 
           exec { "apt_key_add_${normalized_name}":
             command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
             path    => '/usr/bin/:/bin/',
-            require => File[$normalized_name],
-          }
+	    refreshonly	=> true,
+	    notify	=> Exec["apt_get_update_${normalized_name}"],
+          } ->
 
           exec { "apt_get_update_${normalized_name}":
             command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
             path    => '/usr/bin/:/bin/',
-            require => Exec["apt_key_add_${normalized_name}"],
+	    refreshonly	=> true,
           }
         }
         default: {
@@ -136,12 +138,12 @@ define packagecloud::repo(
             path    => "/etc/yum.repos.d/${normalized_name}.repo",
             mode    => '0644',
             content => template('packagecloud/yum.erb'),
-          }
+	    notify  => Exec["yum_make_cache_${repo_name}"],
+          } ->
 
           exec { "yum_make_cache_${repo_name}":
             command => "yum -q makecache -y --disablerepo='*' --enablerepo='${normalized_name}'",
             path    => '/usr/bin',
-            require => File[$normalized_name],
           }
         }
 
