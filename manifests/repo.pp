@@ -25,6 +25,7 @@ define packagecloud::repo(
   $priority = undef,
   $metadata_expire = 300,
   $server_address = 'https://packagecloud.io',
+  $distribution = $::lsbdistcodename,
 ) {
   validate_string($type)
   validate_string($master_token)
@@ -61,7 +62,6 @@ define packagecloud::repo(
 
           $component = 'main'
           $repo_url = "${base_url}/${repo_name}/${osname}"
-          $distribution =  $::lsbdistcodename
 
           file { $normalized_name:
             ensure  => file,
