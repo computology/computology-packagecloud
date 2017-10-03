@@ -68,13 +68,20 @@ define packagecloud::repo(
             path    => "/etc/apt/sources.list.d/${normalized_name}.list",
             mode    => '0644',
             content => template('packagecloud/apt.erb'),
+            notify  => Exec["apt_key_add_${normalized_name}"],
+          }
+
+          exec { "apt_key_download_${normalized_name}":
+            command => "wget --auth-no-challenge -q -O /etc/apt/sources.list.d/${normalized_name}.list ${base_url}/${repo_name}/gpgkey",
+            creates => "/var/cache/apt/${normalized_name}.gpgkey",
+            require => File[$normalized_name],
+            notify  => Exec["apt_key_add_${normalized_name}"],
           }
 
           exec { "apt_key_add_${normalized_name}":
-            command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
-            path    => '/usr/bin/:/bin/',
-            require => File[$normalized_name],
-            unless  => "gpg --batch --no-default-keyring --keyring /etc/apt/trusted.gpg --list-keys ${base_url}/${repo_name}",
+            command     => "apt-key add /var/cache/apt/${normalized_name}.gpgkey",
+            path        => '/usr/bin/:/bin/',
+            refreshonly => true,
           }
 
           exec { "apt_get_update_${normalized_name}":
@@ -94,7 +101,7 @@ define packagecloud::repo(
         'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific', 'OracleLinux', 'OEL': {
 
           $majrel = $::osreleasemaj
-          if $::pygpgme_installed == 'false' {
+          if $::pygpgme_installed == false {
             warning('The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/stahnma/puppet-module-epel')
             $repo_gpgcheck = 0
           } else {
