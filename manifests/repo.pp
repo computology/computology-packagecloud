@@ -25,6 +25,7 @@ define packagecloud::repo(
   $priority = undef,
   $metadata_expire = 300,
   $server_address = 'https://packagecloud.io',
+  $distribution = $::lsbdistcodename,
 ) {
   validate_string($type)
   validate_string($master_token)
@@ -61,27 +62,40 @@ define packagecloud::repo(
 
           $component = 'main'
           $repo_url = "${base_url}/${repo_name}/${osname}"
-          $distribution =  $::lsbdistcodename
 
           file { $normalized_name:
             ensure  => file,
             path    => "/etc/apt/sources.list.d/${normalized_name}.list",
             mode    => '0644',
             content => template('packagecloud/apt.erb'),
+            notify  => Exec["apt_key_add_${normalized_name}"],
+          }
+
+          exec { "apt_key_download_${normalized_name}":
+            command => "wget --auth-no-challenge -q -O /var/cache/apt/${normalized_name}.gpgkey ${base_url}/${repo_name}/gpgkey",
+            path    => '/usr/bin/:/bin/',
+            creates => "/var/cache/apt/${normalized_name}.gpgkey",
+            require => File[$normalized_name],
+            notify  => Exec["apt_key_add_${normalized_name}"],
+            unless  => "/usr/bin/gpg --with-colons /etc/apt/trusted.gpg | /bin/grep -F \"$(/usr/bin/gpg --with-colons /var/cache/apt/${normalized_name}.gpgkey)\"",
           }
 
           exec { "apt_key_add_${normalized_name}":
-            command => "wget --auth-no-challenge -qO - ${base_url}/${repo_name}/gpgkey | apt-key add -",
-            path    => '/usr/bin/:/bin/',
-            require => File[$normalized_name],
+            command     => "apt-key add /var/cache/apt/${normalized_name}.gpgkey",
+            path        => '/usr/bin/:/bin/',
+            refreshonly => true,
           }
 
           exec { "apt_get_update_${normalized_name}":
-            command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
-            path    => '/usr/bin/:/bin/',
-            require => Exec["apt_key_add_${normalized_name}"],
+            command     =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
+            path        => '/usr/bin/:/bin/',
+            require     => Exec["apt_key_add_${normalized_name}"],
+            subscribe   => Exec["apt_key_add_${normalized_name}"],
+            refreshonly => true,
+#            onlyif  => "test $[$(date +%s) - $(stat -c%Y /var/cache/apt/pkgcache.bin)] -gt ${metadata_expire}",
           }
         }
+
         default: {
           fail("Sorry, ${::operatingsystem} isn't supported for apt repos at this time. Email support@packagecloud.io")
         }
@@ -92,7 +106,7 @@ define packagecloud::repo(
         'RedHat', 'redhat', 'CentOS', 'centos', 'Amazon', 'Fedora', 'Scientific', 'OracleLinux', 'OEL': {
 
           $majrel = $::osreleasemaj
-          if $::pygpgme_installed == 'false' {
+          if $::pygpgme_installed == false {
             warning('The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/stahnma/puppet-module-epel')
             $repo_gpgcheck = 0
           } else {
