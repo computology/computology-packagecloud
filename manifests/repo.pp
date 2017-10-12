@@ -72,10 +72,12 @@ define packagecloud::repo(
           }
 
           exec { "apt_key_download_${normalized_name}":
-            command => "wget --auth-no-challenge -q -O /etc/apt/sources.list.d/${normalized_name}.list ${base_url}/${repo_name}/gpgkey",
+            command => "wget --auth-no-challenge -q -O /var/cache/apt/${normalized_name}.gpgkey ${base_url}/${repo_name}/gpgkey",
+            path    => '/usr/bin/:/bin/',
             creates => "/var/cache/apt/${normalized_name}.gpgkey",
             require => File[$normalized_name],
             notify  => Exec["apt_key_add_${normalized_name}"],
+            unless  => "/usr/bin/gpg --with-colons /etc/apt/trusted.gpg | /bin/grep -F \"$(/usr/bin/gpg --with-colons /var/cache/apt/${normalized_name}.gpgkey)\"",
           }
 
           exec { "apt_key_add_${normalized_name}":
@@ -85,12 +87,15 @@ define packagecloud::repo(
           }
 
           exec { "apt_get_update_${normalized_name}":
-            command =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
-            path    => '/usr/bin/:/bin/',
-            require => Exec["apt_key_add_${normalized_name}"],
-            onlyif  => "test $[$(date +%s) - $(stat -c%Y /var/cache/apt/pkgcache.bin)] -gt ${metadata_expire}",
+            command     =>  "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${normalized_name}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
+            path        => '/usr/bin/:/bin/',
+            require     => Exec["apt_key_add_${normalized_name}"],
+            subscribe   => Exec["apt_key_add_${normalized_name}"],
+            refreshonly => true,
+#            onlyif  => "test $[$(date +%s) - $(stat -c%Y /var/cache/apt/pkgcache.bin)] -gt ${metadata_expire}",
           }
         }
+
         default: {
           fail("Sorry, ${::operatingsystem} isn't supported for apt repos at this time. Email support@packagecloud.io")
         }
